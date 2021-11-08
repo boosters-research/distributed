@@ -70,6 +70,12 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type SignupRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
 type CommentRequest struct {
 	Comment   Comment `json:"comment"`
 	SessionID string  `json:"sessionId"`
@@ -202,13 +208,13 @@ func VoteWrapper(upvote bool, isComment bool) func(w http.ResponseWriter, req *h
 	}
 }
 
-func Login(w http.ResponseWriter, req *http.Request) {
+func Signup(w http.ResponseWriter, req *http.Request) {
 	if Cors(w, req) {
 		return
 	}
 
 	decoder := json.NewDecoder(req.Body)
-	var t LoginRequest
+	var t SignupRequest
 	err := decoder.Decode(&t)
 	if err != nil {
 		respond(w, err, err)
@@ -220,13 +226,31 @@ func Login(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		createRsp, err := userService.Create(&user.CreateRequest{
 			Username: t.Username,
-			Email:    t.Username + "@" + t.Username + ".com",
+			Email:    t.Email,
 			Password: t.Password,
 		})
 		if err != nil {
 			respond(w, createRsp, err)
 			return
 		}
+	}
+	logRsp, err := userService.Login(&user.LoginRequest{
+		Username: t.Username,
+		Password: t.Password,
+	})
+	respond(w, logRsp, err)
+}
+
+func Login(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
+		return
+	}
+	decoder := json.NewDecoder(req.Body)
+	var t LoginRequest
+	err := decoder.Decode(&t)
+	if err != nil {
+		respond(w, err, err)
+		return
 	}
 	logRsp, err := userService.Login(&user.LoginRequest{
 		Username: t.Username,
@@ -561,6 +585,7 @@ func Run(address string) {
 	http.HandleFunc("/comment", NewComment)
 	http.HandleFunc("/comments", Comments)
 	http.HandleFunc("/login", Login)
+	http.HandleFunc("/signup", Signup)
 	http.HandleFunc("/readSession", ReadSession)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
