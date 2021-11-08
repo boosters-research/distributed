@@ -8,6 +8,10 @@ Build federated communities using the same API. Distributed provides a single re
 on multiple platforms. Whether its for work, social, or anything else, quickly bring up the backend API for it and spin up 
 your own frontend experience.
 
+## Demo
+
+Find the demo running at [go-distributed.org](https://go-distributed.org)
+
 ## Usage
 
 Distributed is built as a single program in Go.
