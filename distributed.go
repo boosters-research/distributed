@@ -28,6 +28,27 @@ var (
 	mods = os.Getenv("DISTRIBUTED_MODS")
 )
 
+var (
+	// The web template
+	Template = `<html>
+  <head>
+    <title>Go Distributed</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="A federated community API">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      html { font-family: arial; }
+      body { max-width: 1400px; margin: 0 auto; padding-top: 50px; }
+    </style>
+  </head>
+  <body>
+    <h1>Go Distributed</h1>
+    <p>A federated community API<p>
+    <p>Visit <a href="https://github.com/m3o/go-distributed">Github</a> for more info</p>
+  </body>
+</html>`
+)
+
 // Types
 
 type Post struct {
@@ -589,19 +610,7 @@ func Run(address string) {
 	http.HandleFunc("/readSession", ReadSession)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
-  <head>
-    <title>Go Distributed</title>
-    <meta charset="UTF-8">
-    <meta name="description" content="A federated community API">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <body>
-    <h1>Go Distributed</h1>
-    <p>A federated community API<p>
-    <p>Visit <a href="https://github.com/m3o/go-distributed">Github</a> for more info</p>
-  </body>
-</html>
-`))
+		w.Write([]byte(Template))
 	})
 
 	http.ListenAndServe(address, nil)
