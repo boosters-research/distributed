@@ -6,7 +6,7 @@ A federated community API
 
 Build federated communities using the same API. Distributed provides a single reusable API for building multiple communities 
 on multiple platforms. Whether its for work, social, or anything else, quickly bring up the backend API for it and spin up 
-your own frontend experience for it.
+your own frontend experience.
 
 ## Usage
 
