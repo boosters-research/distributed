@@ -18,9 +18,7 @@ Distributed is built as a single Go program.
 
 ### API Key
 
-Get an API key from [m3o.com](https://m3o.com/)
-
-Export the key
+Get an API key from [m3o.com](https://m3o.com/) and export as
 
 ```sh
 export M3O_API_TOKEN=xxxxxx
