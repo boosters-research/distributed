@@ -14,7 +14,7 @@ Find the demo running at [go-distributed.org](https://go-distributed.org)
 
 ## Usage
 
-Distributed is built as a single program in Go.
+Distributed is built as a single Go program.
 
 ### API Key
 
