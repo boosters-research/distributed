@@ -1,4 +1,4 @@
-project_name: distributed
+project_name: go-distributed
 release:
   github:
     owner: m3o
