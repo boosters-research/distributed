@@ -16,7 +16,7 @@ Distributed is built as a single program in Go.
 
 Download and install
 
-```
+```sh
 go get github.com/m3o/go-distributed/cmd/distributed
 ```
 
@@ -32,7 +32,7 @@ Your API should be running on `localhost:8080`
 
 Alternatively import and use it directly
 
-```
+```go
 package main
 
 import (
