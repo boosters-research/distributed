@@ -1,4 +1,5 @@
-package main
+// Package distributed is for building federated communities
+package distributed
 
 import (
 	"encoding/json"
@@ -183,9 +184,9 @@ func isMod(userId, s string) bool {
 	return false
 }
 
-func voteWrapper(upvote bool, isComment bool) func(w http.ResponseWriter, req *http.Request) {
+func VoteWrapper(upvote bool, isComment bool) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		if cors(w, req) {
+		if Cors(w, req) {
 			return
 		}
 
@@ -201,8 +202,8 @@ func voteWrapper(upvote bool, isComment bool) func(w http.ResponseWriter, req *h
 	}
 }
 
-func login(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func Login(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -234,8 +235,8 @@ func login(w http.ResponseWriter, req *http.Request) {
 	respond(w, logRsp, err)
 }
 
-func readSession(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func ReadSession(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -259,8 +260,8 @@ func readSession(w http.ResponseWriter, req *http.Request) {
 	}, err)
 }
 
-func post(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func NewPost(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -329,8 +330,8 @@ func post(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-func comment(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func NewComment(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -452,8 +453,8 @@ func score(m map[string]interface{}) float64 {
 	return sign*order + float64(seconds)/45000
 }
 
-func posts(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func Posts(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -495,8 +496,8 @@ func posts(w http.ResponseWriter, req *http.Request) {
 	respond(w, rsp, err)
 }
 
-func comments(w http.ResponseWriter, req *http.Request) {
-	if cors(w, req) {
+func Comments(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
 		return
 	}
 
@@ -520,7 +521,7 @@ func comments(w http.ResponseWriter, req *http.Request) {
 
 // Utils
 
-func cors(w http.ResponseWriter, req *http.Request) bool {
+func Cors(w http.ResponseWriter, req *http.Request) bool {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
@@ -549,17 +550,17 @@ func respond(w http.ResponseWriter, i interface{}, err error) {
 	fmt.Fprintf(w, fmt.Sprintf("%v", string(bs)))
 }
 
-func main() {
-	http.HandleFunc("/upvotePost", voteWrapper(true, false))
-	http.HandleFunc("/downvotePost", voteWrapper(false, false))
-	http.HandleFunc("/upvoteComment", voteWrapper(true, true))
-	http.HandleFunc("/downvoteComment", voteWrapper(false, true))
-	http.HandleFunc("/posts", posts)
-	http.HandleFunc("/post", post)
-	http.HandleFunc("/comment", comment)
-	http.HandleFunc("/comments", comments)
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/readSession", readSession)
-
-	http.ListenAndServe(":8080", nil)
+// Run the server on a given address
+func Run(address string) {
+	http.HandleFunc("/upvotePost", VoteWrapper(true, false))
+	http.HandleFunc("/downvotePost", VoteWrapper(false, false))
+	http.HandleFunc("/upvoteComment", VoteWrapper(true, true))
+	http.HandleFunc("/downvoteComment", VoteWrapper(false, true))
+	http.HandleFunc("/posts", Posts)
+	http.HandleFunc("/post", NewPost)
+	http.HandleFunc("/comment", NewComment)
+	http.HandleFunc("/comments", Comments)
+	http.HandleFunc("/login", Login)
+	http.HandleFunc("/readSession", ReadSession)
+	http.ListenAndServe(address, nil)
 }
