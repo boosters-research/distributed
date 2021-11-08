@@ -1,4 +1,4 @@
-# Distributed [![godoc](https://godoc.org/github.com/m3o/go-distributed?status.svg)](https://godoc.org/github.com/m3o/go-distributed) [![Go Report Card](https://goreportcard.com/badge/github.com/m3o/go-distributed)](https://goreportcard.com/report/github.com/m3o/go-distributed) [![Apache 2.0 License](https://img.shields.io/github/license/m3o/go-distributed)](https://github.com/m3o/go-distributed/blob/master/LICENSE)
+# Go Distributed [![godoc](https://godoc.org/github.com/m3o/go-distributed?status.svg)](https://godoc.org/github.com/m3o/go-distributed) [![Go Report Card](https://goreportcard.com/badge/github.com/m3o/go-distributed)](https://goreportcard.com/report/github.com/m3o/go-distributed) [![Apache 2.0 License](https://img.shields.io/github/license/m3o/go-distributed)](https://github.com/m3o/go-distributed/blob/master/LICENSE)
 
 A federated community API
 
