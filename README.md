@@ -12,6 +12,16 @@ your own frontend experience.
 
 Distributed is built as a single program in Go.
 
+## API Key
+
+Get an API key from [m3o.com](https://m3o.com/)
+
+Export the key
+
+```sh
+export M3O_API_TOKEN=xxxxxx
+```
+
 ## Server
 
 Download and install
@@ -22,7 +32,7 @@ go get github.com/m3o/go-distributed/cmd/distributed
 
 Run the API
 
-```
+```sh
 distributed
 ```
 
