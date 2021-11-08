@@ -63,6 +63,7 @@ func main() {
         http.HandleFunc("/comment", NewComment)
         http.HandleFunc("/comments", Comments)
         http.HandleFunc("/login", Login)
+        http.HandleFunc("/signup", Signup)
         http.HandleFunc("/readSession", ReadSession)
 	http.ListenAndServe(":8080", nil)
 }
