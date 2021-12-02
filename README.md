@@ -1,12 +1,12 @@
 # Go Distributed [![godoc](https://godoc.org/github.com/m3o/go-distributed?status.svg)](https://godoc.org/github.com/m3o/go-distributed) [![Go Report Card](https://goreportcard.com/badge/github.com/m3o/go-distributed)](https://goreportcard.com/report/github.com/m3o/go-distributed)
 
-A federated community framework
+How remote teams stay in sync
 
 ## Overview
 
-Build federated communities using the same API. Distributed provides a single reusable API for building multiple communities 
-on multiple platforms. Whether its for work, social, or anything else, quickly bring up the backend API for it and spin up 
-your own frontend experience.
+Build a knowledge base, ask questions and stay in sync with your team all while doing it asynchronously.
+Go Distributed is a building block for remote teams and communities. Write posts, leave comments and 
+upvote the most relevant content.
 
 ## Demo
 
