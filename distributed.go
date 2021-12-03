@@ -43,7 +43,7 @@ var (
   </head>
   <body>
     <h1>Go Distributed</h1>
-    <p>A federated community API<p>
+    <p>How remote teams stay in sync<p>
     <p>Visit <a href="https://github.com/m3o/go-distributed">Github</a> for more info</p>
   </body>
 </html>`
