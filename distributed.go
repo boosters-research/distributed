@@ -2,8 +2,11 @@
 package distributed
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
+	"log"
 	"math"
 	"math/rand"
 	"net/http"
@@ -28,26 +31,8 @@ var (
 	mods = os.Getenv("DISTRIBUTED_MODS")
 )
 
-var (
-	// The web template
-	Template = `<html>
-  <head>
-    <title>Go Distributed</title>
-    <meta charset="UTF-8">
-    <meta name="description" content="A federated community API">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      html { font-family: arial; }
-      body { max-width: 1400px; margin: 0 auto; padding-top: 50px; }
-    </style>
-  </head>
-  <body>
-    <h1>Go Distributed</h1>
-    <p>How remote teams stay in sync<p>
-    <p>Visit <a href="https://github.com/m3o/go-distributed">Github</a> for more info</p>
-  </body>
-</html>`
-)
+//go:embed html/*
+var html embed.FS
 
 // Types
 
@@ -62,13 +47,13 @@ type Post struct {
 	Score        float32 `json:"score"`
 	Title        string  `json:"title"`
 	Url          string  `json:"url"`
-	Sub          string  `json:"sub"`
+	Board          string  `json:"board"`
 	CommentCount float32 `json:"commentCount"`
 }
 
 type Comment struct {
 	Content   string  `json:"content"`
-	Parent    string  `json:"sub"`
+	Parent    string  `json:"board"`
 	Upvotes   float32 `json:"upvotes"`
 	Downvotes float32 `json:"downvotes"`
 	PostId    string  `json:"postId"`
@@ -91,6 +76,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type LogoutRequest struct {
+	SessionID string `json:"sessionId"`
+}
+
 type SignupRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -110,7 +99,7 @@ type PostsRequest struct {
 	Min   int32  `json:"min"`
 	Max   int32  `json:"max"`
 	Limit int32  `json:"limit"`
-	Sub   string `json:"sub"`
+	Board   string `json:"board"`
 }
 
 // Endpoints
@@ -280,6 +269,23 @@ func Login(w http.ResponseWriter, req *http.Request) {
 	respond(w, logRsp, err)
 }
 
+func Logout(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
+		return
+	}
+	decoder := json.NewDecoder(req.Body)
+	var t LogoutRequest
+	err := decoder.Decode(&t)
+	if err != nil {
+		respond(w, err, err)
+		return
+	}
+	logRsp, err := userService.Logout(&user.LogoutRequest{
+		SessionId: t.SessionID,
+	})
+	respond(w, logRsp, err)
+}
+
 func ReadSession(w http.ResponseWriter, req *http.Request) {
 	if Cors(w, req) {
 		return
@@ -317,8 +323,8 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 		respond(w, nil, err)
 		return
 	}
-	if t.Post.Sub == "" || t.Post.Title == "" {
-		respond(w, nil, fmt.Errorf("both title and sub are required"))
+	if t.Post.Board == "" || t.Post.Title == "" {
+		respond(w, nil, fmt.Errorf("both title and board are required"))
 		return
 	}
 	if t.Post.Url == "" && t.Post.Content == "" {
@@ -329,8 +335,8 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 		respond(w, nil, fmt.Errorf("post url or title too long"))
 		return
 	}
-	if len(t.Post.Sub) > 50 {
-		respond(w, nil, fmt.Errorf("post sub too long"))
+	if len(t.Post.Board) > 50 {
+		respond(w, nil, fmt.Errorf("post board too long"))
 		return
 	}
 	if len(t.Post.Content) > 3000 {
@@ -357,7 +363,7 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 		}
 		userName = readRsp.Account.Username
 	}
-	dbService.Create(&db.CreateRequest{
+	rsp, err := dbService.Create(&db.CreateRequest{
 		Table: "posts",
 		Record: map[string]interface{}{
 			"id":        uuid.NewV4(),
@@ -368,11 +374,12 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 			"upvotes":   float64(0),
 			"downvotes": float64(0),
 			"score":     float64(0),
-			"sub":       t.Post.Sub,
+			"board":       t.Post.Board,
 			"title":     t.Post.Title,
 			"created":   time.Now(),
 		},
 	})
+	respond(w, rsp, err)
 }
 
 func NewComment(w http.ResponseWriter, req *http.Request) {
@@ -524,11 +531,11 @@ func Posts(w http.ResponseWriter, req *http.Request) {
 		}
 		query += "score <= " + fmt.Sprintf("%v", t.Max)
 	}
-	if t.Sub != "all" && t.Sub != "" {
+	if t.Board != "all" && t.Board != "" {
 		if query != "" {
 			query += " and "
 		}
-		query += fmt.Sprintf("sub == '%v'", t.Sub)
+		query += fmt.Sprintf("board == '%v'", t.Board)
 	}
 	if query != "" {
 		r.Query = query
@@ -597,21 +604,26 @@ func respond(w http.ResponseWriter, i interface{}, err error) {
 
 // Run the server on a given address
 func Run(address string) {
-	http.HandleFunc("/upvotePost", VoteWrapper(true, false))
-	http.HandleFunc("/downvotePost", VoteWrapper(false, false))
-	http.HandleFunc("/upvoteComment", VoteWrapper(true, true))
-	http.HandleFunc("/downvoteComment", VoteWrapper(false, true))
-	http.HandleFunc("/posts", Posts)
-	http.HandleFunc("/post", NewPost)
-	http.HandleFunc("/comment", NewComment)
-	http.HandleFunc("/comments", Comments)
-	http.HandleFunc("/login", Login)
-	http.HandleFunc("/signup", Signup)
-	http.HandleFunc("/readSession", ReadSession)
+	http.HandleFunc("/api/upvotePost", VoteWrapper(true, false))
+	http.HandleFunc("/api/downvotePost", VoteWrapper(false, false))
+	http.HandleFunc("/api/upvoteComment", VoteWrapper(true, true))
+	http.HandleFunc("/api/downvoteComment", VoteWrapper(false, true))
+	http.HandleFunc("/api/posts", Posts)
+	http.HandleFunc("/api/post", NewPost)
+	http.HandleFunc("/api/comment", NewComment)
+	http.HandleFunc("/api/comments", Comments)
+	http.HandleFunc("/api/login", Login)
+	http.HandleFunc("/api/logout", Logout)
+	http.HandleFunc("/api/signup", Signup)
+	http.HandleFunc("/api/readSession", ReadSession)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(Template))
-	})
+	htmlContent, err := fs.Sub(html, "html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// serve the html directory by default
+	http.Handle("/", http.FileServer(http.FS(htmlContent)))
 
 	http.ListenAndServe(address, nil)
 }

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Distributed</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="How remote teams stay in sync | Distributed">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      html { font-family: arial; }
+      body { max-width: 1400px; margin: 0 auto; padding-top: 50px; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="d.css">
+    <script type="text/javascript" src="d.js"></script>
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      <h1>
+        <span class="title">
+          <a href="/">
+          Distributed
+          </a>
+        </span>
+	<div id="menu" onclick="unfold()" style="display: none; float: right; cursor: pointer; vertical-align: middle;">
+	    <div class="menu"></div>
+	    <div class="menu"></div>
+	    <div class="menu"></div>
+	</div>
+        <ul id="nav" class="links" style="display: inline-block; padding: 5px; margin-left: 50px;">
+	  <li class="link"><a href="#new-post">New Post</a></li>
+	</ul>
+        <ul id="links" class="links" style="float: right; display: none; padding: 5px;">
+	  <li class="link"><a href="/">Home</a></li>
+	  <li class="link"><a href="#about">About</a></li>
+	  <li class="link"><a href="#login" id="login">Login</a></li>
+	</ul>
+      </h1>
+      <p>How remote teams stay in sync<p>
+
+      <h4 id="error"></h4>
+      <h3 id="board"></h3>
+      <div id="content"></div>
+
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/m3o/go-distributed">Fork the project</a>.
+      </div>
+    </div>
+    <script>
+      var menu = document.getElementById('menu');
+      var links = document.getElementById('links');
+      var li = document.getElementsByClassName('link')
+
+      var update = function(v) {
+        for (i = 0; i < li.length; i++) {
+          li[i].style.display = v;
+        }       
+      }
+
+      var resize = function() {
+        if (window.innerWidth < 850) {
+          menu.style.display = "block";
+          links.style.display = "none";
+	  links.style.float = "left";
+          update("block");
+        } else {
+	  menu.style.display = "none";
+	  links.style.display = "block";
+	  links.style.float = "right";
+          update("inline");
+	}
+      }
+
+      var unfold = function() {
+        if (links.style.display == "none") {
+          links.style.display = "block";
+	  links.style.float = "none";
+        } else {
+          links.style.display = "none";
+	}
+      }
+
+      window.onload = resize;
+      window.onresize = resize;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>`
