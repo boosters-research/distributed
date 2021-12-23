@@ -106,7 +106,7 @@ function loadAbout() {
 		  Going async means changing the workflow. Rather than being immersed
 		  in streams of messages with no context, we flip it so that everything 
 		  is driven by being context first. Distributed uses the concept of 
-		  "Boards" like notice boards, kanban boards and message boards that 
+		  "Boards" like notice boards, bulletin boards and message boards that 
 		  we all know and love and turns it into the main form of communication 
 		  for remote teams.
 		</p>
