@@ -84,6 +84,10 @@ function timeSince(timestamp) {
 
 // load the about page
 function loadAbout() {
+        // set the pin for the board
+        var title = document.getElementById("board");
+        title.innerText = "📌 " + title.innerText;
+
 	var content = document.getElementById("content");
 
 	// set the content
@@ -155,16 +159,17 @@ function loadBoard(name) {
 
 		for (i = 0; i < data.records.length; i++) {
 			var el = document.createElement("div");
+			el.setAttribute("class", "post");
 			var post = data.records[i];
 
 			// set the title
 			var title = document.createElement("h4");
 			title.innerHTML = "<a href='#post=" + post.id + "'>" + post.title + "</a>";
 			title.id = "post-" + post.id
+			title.setAttribute("class", "post-title");
 
 			var text = document.createElement("p");
-			text.innerHTML = post.content;
-			text.style.display = "none";
+			text.innerHTML = post.content
 			text.id = "post-content-"+post.id;
 
 			el.appendChild(title);
@@ -177,9 +182,13 @@ function loadBoard(name) {
 			if (post.url.length > 0) {
 				info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
 			}
+			info.innerHTML += "<a href='#post="+ post.id + "'>Comments</a> | ";
 
 			if (post.content.length > 0) {
-				info.innerHTML = "<a href='#post="+ post.id + "'>Text</a> | ";
+				text.innerHTML = post.content.substring(0, 80);
+				if (post.content.length > 80) {
+					text.innerHTML += "...";
+				}
 			}
 
 			// posted by
@@ -255,10 +264,6 @@ function loadPost(id) {
 		var info = document.createElement("p");
 		if (post.url.length > 0) {
 			info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
-		}
-
-		if (post.content.length > 0) {
-			info.innerHTML = "<a href='#post="+ post.id + "'>Text</a> | ";
 		}
 
 		info.innerHTML += "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
