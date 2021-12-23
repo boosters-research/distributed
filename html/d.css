@@ -1,0 +1,48 @@
+html, body {
+  color: white;
+  background: #080808;
+}
+.container {
+  width: 100%;
+  font-family: 'Inconsolata', monospace;
+}
+a { color: #f3f3f3; font-weight: bold; }
+.links a { color: #white; font-size: 16px; font-weight: normal; vertical-align: middle; margin-right: 10px;}
+.title a:hover { text-decoration: none; }
+h4.post-title { margin: 0 }
+.menu {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 6px 0;
+  border-radius: 5px;
+}
+#board {
+ text-transform: capitalize;
+}
+#content {
+  border: 5px solid #f3f3f3;
+  padding: 10px;
+  min-height: 600px;
+}
+#error {
+  color: red;
+}
+#new-post input, #new-post textarea {
+  width: 360px;
+}
+.post {
+    border: 1px solid #f3f3f3;
+    display: inline-block;
+    padding: 10px;
+    margin: 10px;
+    min-height: 105px;
+    width: 295px;
+    vertical-align:middle;
+}
+.post-content {
+  display: none;
+}
+#nav {
+  list-style-type: none;
+}
