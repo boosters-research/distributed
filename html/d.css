@@ -1,5 +1,11 @@
-html, body { color: white; background: black; }
-a { color: white; font-weight: bold; }
+html, body {
+  color: white;
+  background: #080808;
+}
+.container {
+  font-family: 'Inconsolata', monospace;
+}
+a { color: #f3f3f3; font-weight: bold; }
 .links a { color: #white; font-size: 16px; font-weight: normal; vertical-align: middle; margin-right: 10px;}
 .title a:hover { text-decoration: none; }
 .menu {
