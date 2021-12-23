@@ -100,6 +100,7 @@ type PostsRequest struct {
 	Max   int32  `json:"max"`
 	Limit int32  `json:"limit"`
 	Board   string `json:"board"`
+	Id string `json:"id,omitempty"`
 }
 
 // Endpoints
@@ -539,6 +540,9 @@ func Posts(w http.ResponseWriter, req *http.Request) {
 	}
 	if query != "" {
 		r.Query = query
+	}
+	if t.Id != "" {
+		r.Id = t.Id
 	}
 
 	rsp, err := dbService.Read(r)

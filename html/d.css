@@ -18,3 +18,9 @@ a { color: white; font-weight: bold; }
 #new-post input, #new-post textarea {
   width: 360px;
 }
+.post-content {
+  display: none;
+}
+#nav {
+  list-style-type: none;
+}

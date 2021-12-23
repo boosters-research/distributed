@@ -137,6 +137,10 @@ function loadBoard(name) {
 	// lowercase the name
 	name = name.toLowerCase();
 
+	// set the pin for the board
+	var title = document.getElementById("board");
+	title.innerText = "📌 " + title.innerText;
+
 	var content = document.getElementById("content");
 
 	// clear the content
@@ -155,15 +159,27 @@ function loadBoard(name) {
 
 			// set the title
 			var title = document.createElement("h4");
-			title.innerText = post.title;
+			title.innerHTML = "<a href='#post=" + post.id + "'>" + post.title + "</a>";
+			title.id = "post-" + post.id
+
+			var text = document.createElement("p");
+			text.innerHTML = post.content;
+			text.style.display = "none";
+			text.id = "post-content-"+post.id;
+
 			el.appendChild(title);
-	
+			el.appendChild(text)
+
 			// below title nav
 			var info = document.createElement("span");
 			info.style.fontSize = "small";
 
 			if (post.url.length > 0) {
 				info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
+			}
+
+			if (post.content.length > 0) {
+				info.innerHTML = "<a href='#post="+ post.id + "'>Text</a> | ";
 			}
 
 			// posted by
@@ -214,6 +230,51 @@ function loadLogin() {
 	`;
 }
 
+function loadPost(id) {
+	callAPI("posts", { "id": id }, function(rsp) {
+		var content = document.getElementById("content");
+		// clear content
+		content.innerHTML = "";
+
+		var title = document.getElementById("board");
+
+		if (rsp.records.length == 0) {
+			content.innerText = "Post not found";
+			return
+		}
+
+		var post = rsp.records[0];
+
+		title.innerText = "🪧 " + post.title;
+
+		// post content
+		var p = document.createElement("p");
+		p.innerHTML = post.content;
+
+		// posted by
+		var info = document.createElement("p");
+		if (post.url.length > 0) {
+			info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
+		}
+
+		if (post.content.length > 0) {
+			info.innerHTML = "<a href='#post="+ post.id + "'>Text</a> | ";
+		}
+
+		info.innerHTML += "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
+		info.style.fontSize = "small";
+
+		// add board name
+		var a = "<a href='#" + post.board + "'>" + post.board + "</a>";
+		info.innerHTML = info.innerHTML + " to " + a;
+
+		content.appendChild(info);
+		content.appendChild(p);
+
+		//title.innerText = rsp.
+		console.log(rsp);
+	})
+}
 
 // login or authenticate the user
 function login(submit) {
@@ -339,6 +400,15 @@ function reload() {
 
 	// get the board name
 	var name = hash.substring(1);
+	var parts = name.split("=");
+	var id = "";
+
+	if (parts.length == 2) {
+		name = parts[0];
+		id = parts[1];
+	}
+
+	// turn the name into the page title	
 	var heading = name.replace("-", " ");
 
 	// get the route
@@ -351,7 +421,7 @@ function reload() {
 	// load the route
 	if (route != undefined) {
 		console.log("Loading route: " + name);
-		route();
+		route(id);
 		return
 	}
 
@@ -395,6 +465,7 @@ routes.set("about", loadAbout);
 routes.set("login", loadLogin);
 routes.set("logout", logout);
 routes.set("new-post", newPost);
+routes.set("post", loadPost);
 
 // when the page is ready, start loading content
 document.addEventListener("DOMContentLoaded", function(event) {
