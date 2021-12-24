@@ -1,4 +1,4 @@
-# Go Distributed [![godoc](https://godoc.org/github.com/m3o/go-distributed?status.svg)](https://godoc.org/github.com/m3o/go-distributed) [![Go Report Card](https://goreportcard.com/badge/github.com/m3o/go-distributed)](https://goreportcard.com/report/github.com/m3o/go-distributed)
+# Go Distributed [![godoc](https://godoc.org/github.com/asim/go-distributed?status.svg)](https://godoc.org/github.com/asim/go-distributed) [![Go Report Card](https://goreportcard.com/badge/github.com/asim/go-distributed)](https://goreportcard.com/report/github.com/asim/go-distributed)
 
 How remote teams stay in sync
 
@@ -7,10 +7,6 @@ How remote teams stay in sync
 Build a knowledge base, ask questions and stay in sync with your team all while doing it asynchronously.
 Go Distributed is a building block for remote teams and communities. Write posts, leave comments and 
 upvote the most relevant content.
-
-## Demo
-
-Find the demo running at [go-distributed.org](https://go-distributed.org)
 
 ## Usage
 
@@ -29,7 +25,7 @@ export M3O_API_TOKEN=xxxxxx
 Download and install
 
 ```sh
-go get github.com/m3o/go-distributed/cmd/distributed
+go get github.com/asim/go-distributed/cmd/distributed
 ```
 
 Run the API
