@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/m3o/go-distributed"
+	"github.com/godistributed/distributed"
 )
 
 func main() {

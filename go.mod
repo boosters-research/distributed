@@ -1,10 +1,10 @@
-module github.com/m3o/go-distributed
+module github.com/godistributed/distributed
 
 go 1.17
 
 require (
 	github.com/satori/go.uuid v1.2.0
-	go.m3o.com v0.1.0
+	go.m3o.com v0.5.0
 )
 
 require (
