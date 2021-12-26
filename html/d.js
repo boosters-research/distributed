@@ -361,7 +361,7 @@ function newPost(submit) {
 		callAPI("post", {
 			"post": {
 				"title": title,
-				"board": board,
+				"board": board.toLowerCase(),
 				"url": url,
 				"content": text
 			},
