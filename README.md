@@ -29,10 +29,10 @@ Download and install
 go get github.com/godistributed/distributed/cmd/distributed
 ```
 
-Run the API
+Run the server
 
 ```sh
 distributed
 ```
 
-Your API should be running on `localhost:8080`
+Your app should be running on `localhost:8080`
