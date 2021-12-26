@@ -10,7 +10,8 @@ upvote the most relevant content.
 
 ## Usage
 
-Distributed is built as a single Go program.
+Distributed is built as a Go server with embedded html and 
+backed by APIs on [M3O](https://m3o.com).
 
 ### API Key
 
