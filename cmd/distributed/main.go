@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/godistributed/distributed"
+	"godistributed.org"
 )
 
 func main() {
