@@ -1,4 +1,4 @@
-module github.com/godistributed/distributed
+module godistributed.org
 
 go 1.17
 
