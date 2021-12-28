@@ -1,5 +1,5 @@
 // call the backend api
-function callAPI(ep, req, fn, err) {
+function callAPI(ep, req, fn, errFn) {
 	const http = new XMLHttpRequest();
 	const url = "/api/" + ep;
 
@@ -9,6 +9,11 @@ function callAPI(ep, req, fn, err) {
 			var data = JSON.parse(this.responseText);
 			fn(data);
 		} else if (this.status == 500) {
+			console.log(ep, errFn);
+			if (errFn != undefined) {
+				errFn(this);
+				return
+			}
 			var data = JSON.parse(this.responseText);
 			var err = JSON.parse(data.error)
 			var error = document.getElementById("error");
@@ -182,7 +187,14 @@ function loadBoard(name) {
 			if (post.url.length > 0) {
 				info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
 			}
-			info.innerHTML += "<a href='#post="+ post.id + "'>Comments</a> | ";
+			var count = 0;
+
+			if (post.commentCount === undefined) {
+				count = 0;
+			} else {
+				count = post.commentCount;
+			}
+			info.innerHTML += "<a href='#post="+ post.id + "'>Comments (" + count + ")</a> | ";
 
 			if (post.content.length > 0) {
 				text.innerHTML = post.content.substring(0, 80);
@@ -196,7 +208,7 @@ function loadBoard(name) {
 
 			// add board name if all
 			if (name == "all") {
-				var a = "<a href='#" + post.board + "'>" + post.board + "</a>";
+				var a = "<a id=board href='#" + post.board + "'>" + post.board + "</a>";
 				info.innerHTML = info.innerHTML + " to " + a;
 			}
 
@@ -239,6 +251,24 @@ function loadLogin() {
 	`;
 }
 
+function loadComments(id) {
+	callAPI("comments", {"postId": id }, function(rsp) {
+		var content = document.getElementById("content");
+		// clear content
+		content.innerHTML = "";
+
+		var title = document.getElementById("board");
+		title.innerText = "📝 Comments";
+
+		if (rsp.records.length == 0) {
+			content.innerText = "No comments yet.";
+			return
+		}
+
+		console.log(rsp.records);
+	});
+}
+
 function loadPost(id) {
 	callAPI("posts", { "id": id }, function(rsp) {
 		var content = document.getElementById("content");
@@ -254,7 +284,7 @@ function loadPost(id) {
 
 		var post = rsp.records[0];
 
-		title.innerText = "🪧 " + post.title;
+		title.innerText = "🪧" + post.title;
 
 		// post content
 		var p = document.createElement("p");
@@ -270,11 +300,27 @@ function loadPost(id) {
 		info.style.fontSize = "small";
 
 		// add board name
-		var a = "<a href='#" + post.board + "'>" + post.board + "</a>";
+		var a = "<a id=board href='#" + post.board + "'>" + post.board + "</a>";
 		info.innerHTML = info.innerHTML + " to " + a;
 
 		content.appendChild(info);
 		content.appendChild(p);
+
+		// comments
+		var comments = document.createElement("h4");
+		var link = document.createElement("a");
+		var count = 0;
+
+		if (post.commentCount === undefined) {
+			count = 0;
+		} else {
+			count = post.commentCount;
+		}
+
+		link.href = "#comments=" + post.id
+		link.innerText = "Comments (" + count + ")";
+		comments.appendChild(link);
+		content.appendChild(comments);
 
 		//title.innerText = rsp.
 		console.log(rsp);
@@ -298,7 +344,7 @@ function login(submit) {
 
 			window.location.href = "/";
 			window.location.hash = "";
-		})
+		}, function(err) { console.log(err); })
 
 		return;
 	}
@@ -320,10 +366,10 @@ function login(submit) {
 			return
 		}
 
-		var lg = document.getElementById("login")
-		lg.innerText = "Logout"
-		lg.href = "#logout"
-	})
+		var lg = document.getElementById("login");
+		lg.innerText = "Logout";
+		lg.href = "#logout";
+	}, function(err) { console.log(err) });
 }
 
 // logout the user
@@ -401,6 +447,10 @@ function reload() {
 	var error = document.getElementById("error");
 	error.innerHTML = "";
 
+	// clear content
+	var content = document.getElementById("content");
+	content.innerHTML = "";
+
 	var hash = window.location.hash;
 
 	// get the board name
@@ -471,6 +521,7 @@ routes.set("login", loadLogin);
 routes.set("logout", logout);
 routes.set("new-post", newPost);
 routes.set("post", loadPost);
+routes.set("comments", loadComments);
 
 // when the page is ready, start loading content
 document.addEventListener("DOMContentLoaded", function(event) {
