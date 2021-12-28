@@ -26,7 +26,7 @@ export M3O_API_TOKEN=xxxxxx
 Download and install
 
 ```sh
-go get github.com/godistributed/distributed/cmd/distributed
+go get godistributed.org/cmd/distributed
 ```
 
 Run the server
