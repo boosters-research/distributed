@@ -15,9 +15,15 @@ function callAPI(ep, req, fn, errFn) {
 				return
 			}
 			var data = JSON.parse(this.responseText);
-			var err = JSON.parse(data.error)
-			var error = document.getElementById("error");
-			error.innerText = err.Detail;
+
+			if (data.error.charAt(0) == "{") {
+				var err = JSON.parse(data.error)
+				var error = document.getElementById("error");
+				error.innerText = err.Detail;
+			} else {
+				var error = document.getElementById("error");
+				error.innerText = data.error;
+			}
 		}
 	}
 
@@ -155,6 +161,16 @@ function loadBoard(name) {
 	// clear the content
 	content.innerHTML = "";
 
+	callAPI("boards", {"name": name }, function(data) {
+		if (data.records.length == 0) {
+			return
+		}
+		if (data.records[0].description.length > 0) {
+			title.innerHTML += " - <span style='font-size: 0.8em; vertical-align: middle;'>" +
+				data.records[0].description + "</span>";
+		}
+	})
+
 	callAPI("posts", {"board": name }, function(data) {
 		console.log("Got the data for " +  name + ": ",  data);
 		if (data.records.length == 0) {
@@ -185,7 +201,7 @@ function loadBoard(name) {
 			info.style.fontSize = "small";
 
 			if (post.url.length > 0) {
-				info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
+				info.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
 			}
 			var count = 0;
 
@@ -194,7 +210,7 @@ function loadBoard(name) {
 			} else {
 				count = post.commentCount;
 			}
-			info.innerHTML += "<a href='#post="+ post.id + "'>Comments (" + count + ")</a> | ";
+			info.innerHTML += "<a href='#comments="+ post.id + "'>🗨️ (" + count + ")</a> | ";
 
 			if (post.content.length > 0) {
 				text.innerHTML = post.content.substring(0, 80);
@@ -252,18 +268,32 @@ function loadLogin() {
 }
 
 function loadComments(id) {
+	var content = document.getElementById("content");
+	// clear content
+	content.innerHTML = "<a href='#post='" + id + "'>&lt; Back to post</a>";
+
+	var title = document.getElementById("board");
+	title.innerText = "🗨️ Comments"
+
+	callAPI("posts", { "id": id }, function(rsp) {
+		title.innerText += ": " + rsp.records[0].title;
+	})
+
 	callAPI("comments", {"postId": id }, function(rsp) {
-		var content = document.getElementById("content");
-		// clear content
-		content.innerHTML = "";
-
-		var title = document.getElementById("board");
-		title.innerText = "📝 Comments";
-
 		if (rsp.records.length == 0) {
-			content.innerText = "No comments yet.";
+			content.innerHTML += "<p>No comments yet.</p>";
 			return
 		}
+
+		for (i = 0; i < rsp.records.length; i++) {
+			var comment = rsp.records[i];
+
+			var c = document.createElement("div");
+			c.setAttribute("class", "comment");
+			c.innerHTML = "<p>"+comment.content+"</p>";
+			c.innerHTML += "<small>Posted by " + comment.userName + " " + timeSince(comment.created) + " ago</small>";
+			content.appendChild(c);
+		};
 
 		console.log(rsp.records);
 	});
@@ -284,7 +314,7 @@ function loadPost(id) {
 
 		var post = rsp.records[0];
 
-		title.innerText = "🪧" + post.title;
+		title.innerText = "🪧 " + post.title;
 
 		// post content
 		var p = document.createElement("p");
@@ -292,8 +322,9 @@ function loadPost(id) {
 
 		// posted by
 		var info = document.createElement("p");
+
 		if (post.url.length > 0) {
-			info.innerHTML = "<a href='"+ post.url + "'>Link</a> | ";
+			info.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
 		}
 
 		info.innerHTML += "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
@@ -318,9 +349,21 @@ function loadPost(id) {
 		}
 
 		link.href = "#comments=" + post.id
-		link.innerText = "Comments (" + count + ")";
+		link.innerText = "🗨️ (" + count + ")";
 		comments.appendChild(link);
+
+		var comment = document.createElement("p");
+		comment.innerHTML = `
+			<form id="new-comment" action="#new-comment" onsubmit="newComment(true); return false;">
+			  <textarea id="comment" cols=50 rows=4></textarea>
+			  <input id="post" value="` + post.id + `" type=hidden />
+			  <br />
+			  <button>Submit</button>
+			</form>
+		`;
+
 		content.appendChild(comments);
+		content.appendChild(comment);
 
 		//title.innerText = rsp.
 		console.log(rsp);
@@ -391,6 +434,71 @@ function logout() {
 	});
 }
 
+function newBoard(submit) {
+	if (submit == true) {
+		console.log("Board event");
+		
+		var session = getCookie("sess");
+
+		var el = document.getElementById("new-board").elements;
+
+		var name = el['name'].value;
+		var description = el['description'].value;
+
+		callAPI("board", {
+			"board": {
+				"name": name.toLowerCase(),
+				"description": description,
+			},
+			"sessionId": session,
+		}, function(rsp) {
+			window.location.href = "/#" + name.toLowerCase();
+		});
+
+		return;
+	}
+
+	// render the form
+	var content = document.getElementById("content");
+	content.innerHTML = `
+		<form id="new-board" action="#new-board" onsubmit="newBoard(true); return false">
+		  <p>
+		    <input id="name" name="name" placeholder="Name" type=text minlength="1" required/>
+		  </p>
+		  <p>
+		    <input id="description" name="description" placeholder="Description" type=text />
+		  </p>
+		  <button>Submit</button>
+		</form>
+	`;
+}
+
+function newComment(submit) {
+	if (submit == true) {
+		console.log("Comment event");
+		
+		var session = getCookie("sess");
+
+		var el = document.getElementById("new-comment").elements;
+
+		var comment = el['comment'].value;
+		var post = el["post"].value;
+
+		callAPI("comment", {
+			"comment": {
+				"content": comment,
+				"postId": post,
+			},
+			"sessionId": session,
+		}, function(rsp) {
+			window.location.href = "/#comments=" + post;
+		});
+
+		return;
+	}
+
+}
+
 function newPost(submit) {
 	if (submit == true) {
 		console.log("Post event");
@@ -422,7 +530,7 @@ function newPost(submit) {
 	// render the form
 	var content = document.getElementById("content");
 	content.innerHTML = `
-		<form id="new-post", action="#new-post" onsubmit="newPost(true); return false">
+		<form id="new-post" action="#new-post" onsubmit="newPost(true); return false">
 		<p>
 		  <input id="title" name="title" placeholder="Title" type=text minlength="1" required />
 		</p>
@@ -519,7 +627,9 @@ var routes = new Map();
 routes.set("about", loadAbout);
 routes.set("login", loadLogin);
 routes.set("logout", logout);
+routes.set("new-board", newBoard);
 routes.set("new-post", newPost);
+routes.set("new-comment", newComment);
 routes.set("post", loadPost);
 routes.set("comments", loadComments);
 
@@ -527,9 +637,21 @@ routes.set("comments", loadComments);
 document.addEventListener("DOMContentLoaded", function(event) {
 	login();
 	reload();
+
+	var goToBoard = document.getElementById("goto");
+
+	goToBoard.addEventListener("keypress", function(e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			if (goToBoard.value.length > 0) {
+				window.location.hash = goToBoard.value.toLowerCase();
+			}
+		}
+	})
 })
 
 window.addEventListener('hashchange', function() {
 	login();
 	reload();
 });
+

@@ -36,6 +36,14 @@ var html embed.FS
 
 // Types
 
+type Board struct {
+	Id string `json:"id"`
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Moderators []string `json:"moderators"`
+	Created string `json:"created"`
+}
+
 type Post struct {
 	Id           string  `json:"id"`
 	UserId       string  `json:"userId"`
@@ -59,6 +67,11 @@ type Comment struct {
 	PostId    string  `json:"postId"`
 	UserName  string  `json:"usernName"`
 	UserId    string  `json:"userId"`
+}
+
+type BoardRequest struct {
+	Board Board `json:"board"`
+	SessionID string `json:"sessionId"`
 }
 
 type PostRequest struct {
@@ -101,6 +114,12 @@ type PostsRequest struct {
 	Limit int32  `json:"limit"`
 	Board   string `json:"board"`
 	Id string `json:"id,omitempty"`
+}
+
+type BoardsRequest struct {
+	Id string `json:"id"`
+	Name string `json:"name"`
+	Limit int32  `json:"limit"`
 }
 
 // Endpoints
@@ -312,6 +331,95 @@ func ReadSession(w http.ResponseWriter, req *http.Request) {
 	}, err)
 }
 
+func NewBoard(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
+		return
+	}
+
+	decoder := json.NewDecoder(req.Body)
+	var t BoardRequest
+	err := decoder.Decode(&t)
+	if err != nil {
+		respond(w, nil, err)
+		return
+	}
+	if t.Board.Name == "" {
+		respond(w, nil, fmt.Errorf("board name is required"))
+		return
+	}
+	if len(t.Board.Name) > 50 {
+		respond(w, nil, fmt.Errorf("board name is too long"))
+		return
+	}
+
+	// check if the board exists
+	r := &db.ReadRequest{
+		Table:   "boards",
+		Limit:   1,
+	}
+
+	query := ""
+
+	if t.Board.Name != "" {
+		query += fmt.Sprintf("name == '%v'", t.Board.Name)
+	}
+	if query != "" {
+		r.Query = query
+	}
+	if t.Board.Id != "" {
+		r.Id = t.Board.Id
+	}
+
+	rsp, err := dbService.Read(r)
+	if err == nil && len(rsp.Records) > 0 {
+		respond(w, nil, fmt.Errorf("board %s already exists", t.Board.Name))
+		return
+	}
+
+	userID := ""
+	userName := ""
+	if t.SessionID != "" {
+		rsp, err := userService.ReadSession(&user.ReadSessionRequest{
+			SessionId: t.SessionID,
+		})
+		if err != nil {
+			respond(w, rsp, err)
+			return
+		}
+		userID = rsp.Session.UserId
+		readRsp, err := userService.Read(&user.ReadRequest{
+			Id: userID,
+		})
+		if err != nil {
+			respond(w, rsp, err)
+			return
+		}
+		userName = readRsp.Account.Username
+	}
+
+	// check if there are moderators
+	// otherwise add the user as one
+	if len(t.Board.Moderators) == 0 {
+		t.Board.Moderators = []string{
+			userName,
+		}
+	}
+
+	// create the board
+	crsp, err := dbService.Create(&db.CreateRequest{
+		Table: "boards",
+		Record: map[string]interface{}{
+			"id":        uuid.NewV4(),
+			"name": t.Board.Name,
+			"description": t.Board.Description,
+			"moderators": t.Board.Moderators,
+			"created":   time.Now(),
+		},
+	})
+
+	respond(w, crsp, err)
+}
+
 func NewPost(w http.ResponseWriter, req *http.Request) {
 	if Cors(w, req) {
 		return
@@ -344,6 +452,10 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 		respond(w, nil, fmt.Errorf("post content too long"))
 		return
 	}
+
+
+
+
 	userID := ""
 	userName := ""
 	if t.SessionID != "" {
@@ -506,6 +618,44 @@ func score(m map[string]interface{}) float64 {
 	return sign*order + float64(seconds)/45000
 }
 
+func Boards(w http.ResponseWriter, req *http.Request) {
+	if Cors(w, req) {
+		return
+	}
+
+	var t BoardsRequest
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(&t)
+	r := &db.ReadRequest{
+		Table:   "boards",
+		Order:   "desc",
+		OrderBy: "created",
+		Limit:   1000,
+	}
+	query := ""
+
+	if t.Name != "" {
+		query += fmt.Sprintf("name == '%v'", t.Name)
+	}
+	if query != "" {
+		r.Query = query
+	}
+	if t.Id != "" {
+		r.Id = t.Id
+	}
+	if t.Limit > 0 {
+		r.Limit = t.Limit
+	}
+
+	rsp, err := dbService.Read(r)
+
+	sort.Slice(rsp.Records, func(i, j int) bool {
+		return score(rsp.Records[i]) > score(rsp.Records[j])
+	})
+
+	respond(w, rsp, err)
+}
+
 func Posts(w http.ResponseWriter, req *http.Request) {
 	if Cors(w, req) {
 		return
@@ -612,9 +762,11 @@ func Run(address string) {
 	http.HandleFunc("/api/downvotePost", VoteWrapper(false, false))
 	http.HandleFunc("/api/upvoteComment", VoteWrapper(true, true))
 	http.HandleFunc("/api/downvoteComment", VoteWrapper(false, true))
-	http.HandleFunc("/api/posts", Posts)
+	http.HandleFunc("/api/board", NewBoard)
 	http.HandleFunc("/api/post", NewPost)
 	http.HandleFunc("/api/comment", NewComment)
+	http.HandleFunc("/api/boards", Boards)
+	http.HandleFunc("/api/posts", Posts)
 	http.HandleFunc("/api/comments", Comments)
 	http.HandleFunc("/api/login", Login)
 	http.HandleFunc("/api/logout", Logout)

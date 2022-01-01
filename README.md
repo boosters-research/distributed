@@ -8,6 +8,8 @@ Build a knowledge base, ask questions and stay in sync with your team all while 
 Distributed is a building block for remote teams and communities. Write posts, leave comments and 
 upvote the most relevant content.
 
+<img src="distributed.png" style="width: 100%; height: auto;" />
+
 ## Usage
 
 Distributed is built as a Go server with embedded html and 

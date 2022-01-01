@@ -25,17 +25,18 @@
 	    <div class="menu"></div>
 	    <div class="menu"></div>
 	</div>
-        <ul id="nav" class="links" style="display: inline-block; padding: 5px; margin-left: 50px;">
-	  <li class="link"><a href="#new-post">New Post</a></li>
-	</ul>
         <ul id="links" class="links" style="float: right; display: none; padding: 5px;">
+	  <li class="link"><a href="#new-board">New Board</a></li>
+	  <li class="link"><a href="#new-post">New Post</a></li>
 	  <li class="link"><a href="/">Home</a></li>
 	  <li class="link"><a href="#about">About</a></li>
 	  <li class="link"><a href="#login" id="login">Login</a></li>
 	</ul>
       </h1>
-      <p>How remote teams stay in sync<p>
-
+      <p>
+	How remote teams stay in sync
+        <span style="float: right;">Goto # <input id="goto" name="goto" placeholder="Board" type=text /></span>
+      </p>
       <h4 id="error"></h4>
       <h3 id="board"></h3>
       <div id="content"></div>
@@ -84,4 +85,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
     <script>anchors.add();</script>
   </body>
-</html>`
+</html>
