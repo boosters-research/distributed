@@ -93,6 +93,50 @@ function timeSince(timestamp) {
 	return Math.floor(seconds) + " seconds";
 }
 
+function getVotes(post) {
+	// add votes
+	var upvotes = 0;
+	var downvotes = 0;
+
+	if (post.upvotes != undefined) {
+		upvotes = post.upvotes;
+	}
+	
+	if (post.downvotes != undefined) {
+		downvotes = post.downvotes;
+	}
+
+	return upvotes - downvotes;
+}
+
+function getLinks(post) {
+	// below title nav
+	var links = document.createElement("span");
+	links.style.fontSize = "small";
+
+	if (post.url.length > 0) {
+		links.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
+	}
+	var count = 0;
+
+	// add comment count
+	if (post.commentCount === undefined) {
+		count = 0;
+	} else {
+		count = post.commentCount;
+	}
+
+	links.innerHTML += "<a href='#comments="+ post.id + "'> 🗨️ (" + count + ")</a> ";
+
+	// add votes
+	var votes = getVotes(post);
+	links.innerHTML += " | <a id='upvote-"+post.id+"' data-votes=" + votes + " href='#upvote=" 
+			+ post.id + "' onclick='upvote(\""+post.id+"\"); return false;'><span class=upvote>🔺</span>" 
+			+ votes + "</a>";
+
+	return links;
+}
+
 // load the about page
 function loadAbout() {
         // set the pin for the board
@@ -189,29 +233,17 @@ function loadBoard(name) {
 			title.id = "post-" + post.id
 			title.setAttribute("class", "post-title");
 
+			var info = document.createElement("span");
+			info.style.fontSize = "small";
+
+			// posted by
+			info.innerHTML = "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
+
 			var text = document.createElement("p");
 			text.innerHTML = post.content
 			text.id = "post-content-"+post.id;
 
-			el.appendChild(title);
-			el.appendChild(text)
-
-			// below title nav
-			var info = document.createElement("span");
-			info.style.fontSize = "small";
-
-			if (post.url.length > 0) {
-				info.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
-			}
-			var count = 0;
-
-			if (post.commentCount === undefined) {
-				count = 0;
-			} else {
-				count = post.commentCount;
-			}
-			info.innerHTML += "<a href='#comments="+ post.id + "'>🗨️ (" + count + ")</a> | ";
-
+			// reducethe post length
 			if (post.content.length > 0) {
 				text.innerHTML = post.content.substring(0, 80);
 				if (post.content.length > 80) {
@@ -219,17 +251,20 @@ function loadBoard(name) {
 				}
 			}
 
-			// posted by
-			info.innerHTML += "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
-
 			// add board name if all
 			if (name == "all") {
 				var a = "<a id=board href='#" + post.board + "'>" + post.board + "</a>";
 				info.innerHTML = info.innerHTML + " to " + a;
 			}
 
+			// create the nav links
+			var links = getLinks(post);
+
 			// append the content
+			el.appendChild(title);
 			el.appendChild(info);
+			el.appendChild(text)
+			el.appendChild(links);
 			content.appendChild(el);
 		}
 	});
@@ -270,7 +305,7 @@ function loadLogin() {
 function loadComments(id) {
 	var content = document.getElementById("content");
 	// clear content
-	content.innerHTML = "<a href='#post='" + id + "'>&lt; Back to post</a>";
+	content.innerHTML = "<a href='#post=" + id + "'>&lt; Back to post</a>";
 
 	var title = document.getElementById("board");
 	title.innerText = "🗨️ Comments"
@@ -323,10 +358,6 @@ function loadPost(id) {
 		// posted by
 		var info = document.createElement("p");
 
-		if (post.url.length > 0) {
-			info.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
-		}
-
 		info.innerHTML += "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
 		info.style.fontSize = "small";
 
@@ -348,9 +379,8 @@ function loadPost(id) {
 			count = post.commentCount;
 		}
 
-		link.href = "#comments=" + post.id
-		link.innerText = "🗨️ (" + count + ")";
-		comments.appendChild(link);
+		var links = getLinks(post);
+		comments.appendChild(links);
 
 		var comment = document.createElement("p");
 		comment.innerHTML = `
@@ -620,6 +650,18 @@ function signup(submit) {
 
 		return;
 	}
+}
+
+function upvote(id) {
+	var session = getCookie("sess");
+
+	callAPI("upvotePost", {"id": id, sessionId: session}, function(rsp) {
+		var up = document.getElementById("upvote-"+id);
+		var votes = parseInt(up.getAttribute("data-votes"));
+		votes += 1;
+		up.setAttribute("data-votes", votes);
+		up.innerHTML = '<span class=upvote>🔺</span>' + votes;
+	}, function(err) { console.log(err) })
 }
 
 // the global router
