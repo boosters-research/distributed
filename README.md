@@ -10,6 +10,10 @@ upvote the most relevant content.
 
 <img src="distributed.png" style="width: 100%; height: auto;" />
 
+## Source
+
+Find the source code on [GitHub](https://github.com/godistributed/distributed).
+
 ## Usage
 
 Distributed is built as a Go server with embedded html and 
@@ -38,3 +42,20 @@ distributed
 ```
 
 Your app should be running on `localhost:8080`
+
+## Development
+
+For local development clone the project 
+
+```
+git clone https://github.com/godistributed/distributed
+```
+
+- Edit frontend html/js/css in distributed/html/
+- Edit backend APIs in distributed/distributed.go
+
+Run the app
+
+```
+go run distributed/cmd/distributed
+```
