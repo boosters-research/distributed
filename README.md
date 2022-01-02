@@ -16,8 +16,9 @@ Find the source code on [GitHub](https://github.com/godistributed/distributed).
 
 ## Usage
 
-Distributed is built as a Go server with embedded html and 
-backed by APIs on [M3O](https://m3o.com).
+Distributed is built as a single Go server with embedded html and 
+backed by the DB and User APIs on [M3O](https://m3o.com) for storage 
+and authentication.
 
 ### API Key
 
