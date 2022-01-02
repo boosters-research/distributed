@@ -1,7 +1,7 @@
 project_name: distributed
 release:
   github:
-    owner: go-distributed
+    owner: godistributed
     name: distributed
   name_template: 'Release {{.Tag}}'
 before:
