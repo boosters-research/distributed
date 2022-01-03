@@ -41,9 +41,18 @@ h4.post-title { margin: 0 }
     display: inline-block;
     padding: 10px;
     margin: 10px;
-    min-height: 105px;
+    height: 175px;
     width: 295px;
     vertical-align:top;
+    position: relative;
+}
+.post-info {
+  margin-bottom: 10px;
+  display: block;
+}
+.post-nav {
+  position: absolute;
+  bottom: 0;
 }
 .post-content {
   display: none;

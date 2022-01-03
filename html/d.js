@@ -113,6 +113,7 @@ function getLinks(post) {
 	// below title nav
 	var links = document.createElement("span");
 	links.style.fontSize = "small";
+	links.setAttribute("class", "post-nav");
 
 	if (post.url.length > 0) {
 		links.innerHTML = "<a href='"+ post.url + "'>Link 🔗</a> | ";
@@ -235,6 +236,7 @@ function loadBoard(name) {
 
 			var info = document.createElement("span");
 			info.style.fontSize = "small";
+			info.setAttribute("class", "post-info");
 
 			// posted by
 			info.innerHTML = "Posted by " + post.userName + " " + timeSince(post.created) + " ago";
