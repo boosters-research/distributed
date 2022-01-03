@@ -37,11 +37,11 @@ var html embed.FS
 // Types
 
 type Board struct {
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Moderators []string `json:"moderators"`
-	Created string `json:"created"`
+	Id          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Moderators  []string `json:"moderators"`
+	Created     string   `json:"created"`
 }
 
 type Post struct {
@@ -55,7 +55,7 @@ type Post struct {
 	Score        float32 `json:"score"`
 	Title        string  `json:"title"`
 	Url          string  `json:"url"`
-	Board          string  `json:"board"`
+	Board        string  `json:"board"`
 	CommentCount float32 `json:"commentCount"`
 }
 
@@ -70,7 +70,7 @@ type Comment struct {
 }
 
 type BoardRequest struct {
-	Board Board `json:"board"`
+	Board     Board  `json:"board"`
 	SessionID string `json:"sessionId"`
 }
 
@@ -112,13 +112,13 @@ type PostsRequest struct {
 	Min   int32  `json:"min"`
 	Max   int32  `json:"max"`
 	Limit int32  `json:"limit"`
-	Board   string `json:"board"`
-	Id string `json:"id,omitempty"`
+	Board string `json:"board"`
+	Id    string `json:"id,omitempty"`
 }
 
 type BoardsRequest struct {
-	Id string `json:"id"`
-	Name string `json:"name"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
 	Limit int32  `json:"limit"`
 }
 
@@ -354,8 +354,8 @@ func NewBoard(w http.ResponseWriter, req *http.Request) {
 
 	// check if the board exists
 	r := &db.ReadRequest{
-		Table:   "boards",
-		Limit:   1,
+		Table: "boards",
+		Limit: 1,
 	}
 
 	query := ""
@@ -376,26 +376,29 @@ func NewBoard(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	userID := ""
-	userName := ""
-	if t.SessionID != "" {
-		rsp, err := userService.ReadSession(&user.ReadSessionRequest{
-			SessionId: t.SessionID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userID = rsp.Session.UserId
-		readRsp, err := userService.Read(&user.ReadRequest{
-			Id: userID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userName = readRsp.Account.Username
+	if len(t.SessionID) == 0 {
+		respond(w, nil, fmt.Errorf("not logged in"))
+		return
 	}
+
+	var userID, userName string
+
+	srsp, err := userService.ReadSession(&user.ReadSessionRequest{
+		SessionId: t.SessionID,
+	})
+	if err != nil {
+		respond(w, srsp, err)
+		return
+	}
+	userID = srsp.Session.UserId
+	readRsp, err := userService.Read(&user.ReadRequest{
+		Id: userID,
+	})
+	if err != nil {
+		respond(w, readRsp, err)
+		return
+	}
+	userName = readRsp.Account.Username
 
 	// check if there are moderators
 	// otherwise add the user as one
@@ -409,11 +412,11 @@ func NewBoard(w http.ResponseWriter, req *http.Request) {
 	crsp, err := dbService.Create(&db.CreateRequest{
 		Table: "boards",
 		Record: map[string]interface{}{
-			"id":        uuid.NewV4(),
-			"name": t.Board.Name,
+			"id":          uuid.NewV4(),
+			"name":        t.Board.Name,
 			"description": t.Board.Description,
-			"moderators": t.Board.Moderators,
-			"created":   time.Now(),
+			"moderators":  t.Board.Moderators,
+			"created":     time.Now(),
 		},
 	})
 
@@ -453,30 +456,31 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
-
-
-	userID := ""
-	userName := ""
-	if t.SessionID != "" {
-		rsp, err := userService.ReadSession(&user.ReadSessionRequest{
-			SessionId: t.SessionID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userID = rsp.Session.UserId
-		readRsp, err := userService.Read(&user.ReadRequest{
-			Id: userID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userName = readRsp.Account.Username
+	if len(t.SessionID) == 0 {
+		respond(w, nil, fmt.Errorf("not logged in"))
+		return
 	}
-	rsp, err := dbService.Create(&db.CreateRequest{
+
+	var userID, userName string
+
+	rsp, err := userService.ReadSession(&user.ReadSessionRequest{
+		SessionId: t.SessionID,
+	})
+	if err != nil {
+		respond(w, rsp, err)
+		return
+	}
+	userID = rsp.Session.UserId
+	readRsp, err := userService.Read(&user.ReadRequest{
+		Id: userID,
+	})
+	if err != nil {
+		respond(w, rsp, err)
+		return
+	}
+	userName = readRsp.Account.Username
+
+	crsp, err := dbService.Create(&db.CreateRequest{
 		Table: "posts",
 		Record: map[string]interface{}{
 			"id":        uuid.NewV4(),
@@ -487,12 +491,12 @@ func NewPost(w http.ResponseWriter, req *http.Request) {
 			"upvotes":   float64(0),
 			"downvotes": float64(0),
 			"score":     float64(0),
-			"board":       t.Post.Board,
+			"board":     t.Post.Board,
 			"title":     t.Post.Title,
 			"created":   time.Now(),
 		},
 	})
-	respond(w, rsp, err)
+	respond(w, crsp, err)
 }
 
 func NewComment(w http.ResponseWriter, req *http.Request) {
@@ -507,34 +511,39 @@ func NewComment(w http.ResponseWriter, req *http.Request) {
 		respond(w, nil, err)
 		return
 	}
-	userID := ""
-	userName := ""
-	// get user if available
-	if t.SessionID != "" {
-		rsp, err := userService.ReadSession(&user.ReadSessionRequest{
-			SessionId: t.SessionID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userID = rsp.Session.UserId
-		readRsp, err := userService.Read(&user.ReadRequest{
-			Id: userID,
-		})
-		if err != nil {
-			respond(w, rsp, err)
-			return
-		}
-		userName = readRsp.Account.Username
+
+	if len(t.SessionID) == 0 {
+		respond(w, nil, fmt.Errorf("not logged in"))
+		return
 	}
+
+	var userID, userName string
+
+	// get user if available
+	rsp, err := userService.ReadSession(&user.ReadSessionRequest{
+		SessionId: t.SessionID,
+	})
+	if err != nil {
+		respond(w, rsp, err)
+		return
+	}
+	userID = rsp.Session.UserId
+	readRsp, err := userService.Read(&user.ReadRequest{
+		Id: userID,
+	})
+	if err != nil {
+		respond(w, rsp, err)
+		return
+	}
+	userName = readRsp.Account.Username
+
 	if t.Comment.PostId == "" {
 		respond(w, nil, fmt.Errorf("no post id"))
 		return
 	}
 
 	// get post to update comment counter
-	readRsp, err := dbService.Read(&db.ReadRequest{
+	dbRsp, err := dbService.Read(&db.ReadRequest{
 		Table: "posts",
 		Id:    t.Comment.PostId,
 	})
@@ -542,11 +551,11 @@ func NewComment(w http.ResponseWriter, req *http.Request) {
 		respond(w, nil, err)
 		return
 	}
-	if readRsp == nil || len(readRsp.Records) == 0 {
+	if dbRsp == nil || len(dbRsp.Records) == 0 {
 		respond(w, nil, fmt.Errorf("post not found"))
 		return
 	}
-	if len(readRsp.Records) > 1 {
+	if len(dbRsp.Records) > 1 {
 		respond(w, nil, fmt.Errorf("multiple posts found"))
 		return
 	}
@@ -573,16 +582,16 @@ func NewComment(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// update counter
-	oldCount, ok := readRsp.Records[0]["commentCount"].(float64)
+	oldCount, ok := dbRsp.Records[0]["commentCount"].(float64)
 	if !ok {
 		oldCount = 0
 	}
 	oldCount++
-	readRsp.Records[0]["commentCount"] = oldCount
+	dbRsp.Records[0]["commentCount"] = oldCount
 	_, err = dbService.Update(&db.UpdateRequest{
 		Table:  "posts",
 		Id:     t.Comment.PostId,
-		Record: readRsp.Records[0],
+		Record: dbRsp.Records[0],
 	})
 	respond(w, nil, err)
 }
