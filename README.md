@@ -10,6 +10,10 @@ upvote the most relevant content.
 
 <img src="distributed.png" style="width: 100%; height: auto;" />
 
+## Demo
+
+Go to [distributed.m3o.app](https://distributed.m3o.app/) for a live demo.
+
 ## Source
 
 Find the source code on [GitHub](https://github.com/godistributed/distributed).
