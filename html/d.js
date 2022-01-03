@@ -372,6 +372,9 @@ function loadPost(id) {
 
 		// comments
 		var comments = document.createElement("h4");
+		comments.style.position = "relative";
+		comments.style.padding = "10px 0 10px 0";
+
 		var link = document.createElement("a");
 		var count = 0;
 
