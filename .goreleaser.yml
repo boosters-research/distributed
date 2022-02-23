@@ -1,7 +1,7 @@
 project_name: distributed
 release:
   github:
-    owner: godistributed
+    owner: m3o
     name: distributed
   name_template: 'Release {{.Tag}}'
 before:
